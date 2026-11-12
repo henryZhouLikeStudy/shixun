@@ -27,7 +27,7 @@ public sealed class Source {
  public string id=Data.Id(),name="",url="",group="我的订阅",etag="",modified="",error="",imageReferer="",format="",description="";
  public bool enabled=true,privateSource=false,initialized=false;
  public int interval=0,failures=0;
- public double nextRun=0,lastSync=0;
+ public double nextRun=0,lastSync=0,upstreamUpdated=0;
 }
 public sealed class Category {
  public string id=Data.Id(),name="",color="#729178",keywords="",exclude="",pattern="",ruleSource="",ruleKey="";
