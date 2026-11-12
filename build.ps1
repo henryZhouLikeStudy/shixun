@@ -18,7 +18,7 @@ foreach ($file in @('LICENSE','README.md','THIRD-PARTY-NOTICES.md','CHANGELOG.md
 Copy-Item -LiteralPath (Join-Path $WebViewSdk 'LICENSE.txt') -Destination (Join-Path $outDir 'LICENSE-WebView2.txt') -Force
 Copy-Item -LiteralPath (Join-Path $WebViewSdk 'NOTICE.txt') -Destination (Join-Path $outDir 'NOTICE-WebView2.txt') -Force
 if ($Test) {
- $core = @('Models.cs','Store.cs','Transport.cs','Feeds.cs','Rules.cs','Engine.cs','ImageCache.cs','AiService.cs') | ForEach-Object { Join-Path $root "src/$_" }
+ $core = @('Models.cs','Store.cs','Transport.cs','Feeds.cs','Rules.cs','Engine.cs','ImageCache.cs','AiService.cs','BatchEdit.cs') | ForEach-Object { Join-Path $root "src/$_" }
  & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Web.Extensions.dll /reference:System.Security.dll /reference:System.Xml.Linq.dll "/out:$outDir/CoreTests.exe" @core (Join-Path $root 'tests/CoreTests.cs')
  if ($LASTEXITCODE -ne 0) { throw 'Test compilation failed' }
  Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'CoreTests.exe.config') -Force
