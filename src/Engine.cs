@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-3.0-only
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+namespace Shixun {
+public sealed class Engine {
+ readonly Store store;int running;
+ public event Action Changed;
+ public event Action<List<Article>> Arrived;
+ public bool Busy{get{return running!=0;}}
+ public bool HasDue(){lock(store.Gate){double now=Data.Now();return store.State.sources.Any(s=>s.enabled&&s.nextRun<=now)||store.State.ruleSources.Any(s=>s.autoUpdate&&s.nextRun<=now)||store.State.articles.Any(a=>a.remindAt>0&&a.remindAt<=now);}}
+ public Engine(Store value){store=value;}
+ public Task Run(bool force=false,string only=""){if(Interlocked.CompareExchange(ref running,1,0)!=0)return Task.FromResult(0);return Task.Run(()=>{var news=new List<Article>();try{List<Source> sources;lock(store.Gate)sources=store.State.sources.Where(s=>s.enabled&&(only.Length==0||only==s.id)&&(force||s.nextRun<=Data.Now())).Select(Data.Clone).ToList();foreach(var source in sources){Source current;lock(store.Gate)current=store.State.sources.FirstOrDefault(s=>s.id==source.id);if(current==null)continue;RequestProfile profile;lock(store.Gate){RequestProfile saved;profile=store.State.credentials.TryGetValue(source.id,out saved)?Data.Clone(saved):new RequestProfile();}
+ try{var fetched=Transport.Fetch(source.url,profile,source.etag,source.modified);FeedResult feed=fetched.status==304?null:Feeds.Parse(fetched.text,source,fetched.finalUri);lock(store.Gate){current=store.State.sources.FirstOrDefault(s=>s.id==source.id);if(current==null||current.url!=source.url)continue;if(feed!=null){foreach(var a in feed.articles){var old=store.State.articles.FirstOrDefault(x=>x.id==a.id);if(old!=null){a.read=old.read;a.star=old.star;a.locked=old.locked;a.category=old.category;a.firstSeen=old.firstSeen;a.remindAt=old.remindAt;if(a.dateOrigin=="firstSeen")a.time=old.time;store.State.articles.Remove(old);}a.category=Rules.Classify(store.State,a);bool seen=store.State.seen.Any(x=>x.id==a.id);if(!seen)store.State.seen.Add(new Mark{id=a.id,time=Data.Now()});if(store.State.deleted.Any(x=>x.id==a.id))continue;if(a.time<Data.Now()-store.State.settings.retention*86400000d&&!(a.star&&store.State.settings.keepStars))continue;store.State.articles.Add(a);if(current.initialized&&!seen&&Rules.Notify(store.State.settings,a))news.Add(Data.Clone(a));}current.format=feed.format;if(current.name.Length==0)current.name=feed.title.Length>0?feed.title:"未命名订阅";current.etag=fetched.etag;current.modified=fetched.modified;}current.initialized=true;current.error="";current.failures=0;current.lastSync=Data.Now();current.nextRun=Data.Now()+Math.Max(1,current.interval>0?current.interval:store.State.settings.interval)*60000d;store.Save();}}
+ catch(Exception ex){lock(store.Gate){current=store.State.sources.FirstOrDefault(s=>s.id==source.id);if(current!=null){current.failures++;current.error=ex is SafeError?ex.Message:"同步失败，请检查地址、请求配置与网络。";int seconds=ex is SafeError?((SafeError)ex).delay:0;current.nextRun=Data.Now()+Math.Max(seconds,Math.Min(3600,60*Math.Pow(2,Math.Min(6,current.failures))))*1000;store.Save();}}store.Log("feed sync failed");}if(Changed!=null)Changed();}
+ List<RuleSource> ruleSources;lock(store.Gate)ruleSources=store.State.ruleSources.Where(s=>s.autoUpdate&&s.nextRun<=Data.Now()).Select(Data.Clone).ToList();foreach(var rule in ruleSources)try{UpdateRules(rule.id,false);}catch{store.Log("rule check failed");}
+ lock(store.Gate){foreach(var a in store.State.articles.Where(a=>a.remindAt>0&&a.remindAt<=Data.Now())){a.remindAt=0;if(Rules.Notify(store.State.settings,a))news.Add(Data.Clone(a));}foreach(var a in news)store.State.notices.Add(new Notice{id=Data.Id(),article=a.id,time=Data.Now()});store.Clean();}
+ if(news.Count>0&&Arrived!=null)Arrived(news);
+ }finally{Interlocked.Exchange(ref running,0);if(Changed!=null)Changed();}});}
+ public RuleDocument UpdateRules(string id,bool apply){RuleSource source;RequestProfile profile;lock(store.Gate){source=Data.Clone(store.State.ruleSources.First(s=>s.id==id));RequestProfile saved;profile=store.State.credentials.TryGetValue(id,out saved)?Data.Clone(saved):new RequestProfile();}try{var fetched=Transport.Fetch(Transport.GitHubUrl(source.url),profile,"","",1024*1024);var doc=Rules.Parse(fetched.text);lock(store.Gate){var live=store.State.ruleSources.FirstOrDefault(s=>s.id==id);if(live==null)throw new SafeError("规则源已移除。");live.lastSync=Data.Now();live.nextRun=Data.Now()+86400000;live.error="";if(apply)Rules.Apply(store.State,doc,id);store.Save();}return doc;}catch(Exception ex){lock(store.Gate){var live=store.State.ruleSources.FirstOrDefault(s=>s.id==id);if(live!=null){live.error=ex is SafeError?ex.Message:"规则获取失败，旧规则已保留。";live.nextRun=Data.Now()+3600000;store.Save();}}throw ex is SafeError?ex:new SafeError("规则获取失败，旧规则已保留。");}}
+}
+}

@@ -1,0 +1,21 @@
+name: Windows build and tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download pinned official WebView2 SDK
+        shell: pwsh
+        run: ./scripts/get-webview.ps1
+      - name: Compile and run core and native credential tests
+        shell: pwsh
+        run: ./build.ps1 -Test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shixun-windows-build
+          path: build/

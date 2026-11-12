@@ -1,0 +1,13 @@
+build/
+dist/
+.deps/
+test-results/
+*.user
+*.dpapi*
+*.log
+*.pid
+*.signal
+node_modules/
+*.zip
+local-*/
+app/
