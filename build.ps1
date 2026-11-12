@@ -18,12 +18,17 @@ foreach ($file in @('LICENSE','README.md','THIRD-PARTY-NOTICES.md','CHANGELOG.md
 Copy-Item -LiteralPath (Join-Path $WebViewSdk 'LICENSE.txt') -Destination (Join-Path $outDir 'LICENSE-WebView2.txt') -Force
 Copy-Item -LiteralPath (Join-Path $WebViewSdk 'NOTICE.txt') -Destination (Join-Path $outDir 'NOTICE-WebView2.txt') -Force
 if ($Test) {
- $core = @('Models.cs','Store.cs','Transport.cs','Feeds.cs','Rules.cs','Engine.cs','ImageCache.cs') | ForEach-Object { Join-Path $root "src/$_" }
+ $core = @('Models.cs','Store.cs','Transport.cs','Feeds.cs','Rules.cs','Engine.cs','ImageCache.cs','AiService.cs') | ForEach-Object { Join-Path $root "src/$_" }
  & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Web.Extensions.dll /reference:System.Security.dll /reference:System.Xml.Linq.dll "/out:$outDir/CoreTests.exe" @core (Join-Path $root 'tests/CoreTests.cs')
  if ($LASTEXITCODE -ne 0) { throw 'Test compilation failed' }
  Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'CoreTests.exe.config') -Force
  & (Join-Path $outDir 'CoreTests.exe')
  if ($LASTEXITCODE -ne 0) { throw 'Core tests failed' }
+ & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Web.Extensions.dll /reference:System.Security.dll /reference:System.Xml.Linq.dll "/out:$outDir/AiTests.exe" @core (Join-Path $root 'tests/AiTests.cs')
+ if ($LASTEXITCODE -ne 0) { throw 'AI test compilation failed' }
+ Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'AiTests.exe.config') -Force
+ & (Join-Path $outDir 'AiTests.exe')
+ if ($LASTEXITCODE -ne 0) { throw 'AI tests failed' }
  & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Web.Extensions.dll "/out:$outDir/CredentialTests.exe" (Join-Path $root 'src/Models.cs') (Join-Path $root 'src/Transport.cs') (Join-Path $root 'src/CredentialDialog.cs') (Join-Path $root 'tests/CredentialTests.cs')
  if ($LASTEXITCODE -ne 0) { throw 'Credential test compilation failed' }
  & (Join-Path $outDir 'CredentialTests.exe')

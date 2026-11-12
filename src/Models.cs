@@ -42,6 +42,18 @@ public sealed class Article {
  public double time=0,firstSeen=0,remindAt=0;
  public bool read=false,star=false,locked=false;
  public List<string> images=new List<string>();
+ public AiResult ai;
+ public string aiError="";
+}
+public sealed class AiSettings {
+ public bool enabled=false,autoNew=true,allowPrivate=false,useTitle=true,useCategory=true,useRating=true;
+ public string endpoint="",model="",mode="normal",tokenField="max_tokens",reasoningEffort="",thinking="model",criteria="根据内容相关性、信息完整度和实用性评价；购物信息优先主商品，忽略赠品与凑单，不虚构价格比较或优惠真实性。";
+ public int maxTokens=2048,timeoutSeconds=90,dailyLimit=30,maxInputChars=6000;
+}
+public sealed class AiResult {
+ public string title="",categoryId="",reason="",model="",fingerprint="";
+ public int rating;
+ public double at;
 }
 public sealed class Mark {public string id="";public double time=0;}
 public sealed class Notice {public string id="",article="";public double time=0;}
@@ -55,6 +67,9 @@ public sealed class ClientState {
  public List<Mark> deleted=new List<Mark>(),seen=new List<Mark>();
  public List<Notice> notices=new List<Notice>();
  public Dictionary<string,RequestProfile> credentials=new Dictionary<string,RequestProfile>();
+ public AiSettings ai=new AiSettings();
+ public string aiDay="";
+ public int aiRequestsToday=0;
 }
 public sealed class RuleDocument {public int version;public List<RuleCategory> categories=new List<RuleCategory>();}
 public sealed class RuleCategory {public string key="",name="",color="#729178";public List<string> keywords=new List<string>(),exclude=new List<string>();}

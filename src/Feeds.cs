@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 namespace Shixun {
 public sealed class FeedResult {public string title="",format="";public List<Article> articles=new List<Article>();}
 public static class Feeds {
+ public static string ShortTitle(string title){string text=Plain(title);text=Regex.Replace(text,"\\[图片\\]|网页链接","");text=Regex.Replace(text,"\\s+"," ").Trim();return text.Length>44?text.Substring(0,44)+"…":text.Length>0?text:"无标题内容";}
  public static Uri Base(XElement element,Uri fallback){var result=fallback;foreach(var ancestor in element.AncestorsAndSelf().Reverse()){var attribute=ancestor.Attribute(XNamespace.Xml+"base");Uri resolved;if(attribute!=null&&Uri.TryCreate(result,attribute.Value,out resolved))result=resolved;}return result;}
  public static XDocument Xml(string text){using(var reader=XmlReader.Create(new StringReader(text.TrimStart('\uFEFF')),new XmlReaderSettings{DtdProcessing=DtdProcessing.Prohibit,XmlResolver=null,MaxCharactersInDocument=5*1024*1024}))return XDocument.Load(reader);}
  static string Child(XElement e,string name){var v=e.Elements().FirstOrDefault(x=>x.Name.LocalName.Equals(name,StringComparison.OrdinalIgnoreCase));return v==null?"":v.Value;}
