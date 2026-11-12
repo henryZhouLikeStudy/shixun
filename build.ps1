@@ -33,5 +33,10 @@ if ($Test) {
  if ($LASTEXITCODE -ne 0) { throw 'Credential test compilation failed' }
  & (Join-Path $outDir 'CredentialTests.exe')
  if ($LASTEXITCODE -ne 0) { throw 'Credential dialog test failed' }
+ & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Windows.Forms.dll "/reference:$outDir/Shixun.exe" "/out:$outDir/SourceActionsTests.exe" (Join-Path $root 'tests/SourceActionsTests.cs')
+ if ($LASTEXITCODE -ne 0) { throw 'Source action test compilation failed' }
+ Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'SourceActionsTests.exe.config') -Force
+ & (Join-Path $outDir 'SourceActionsTests.exe')
+ if ($LASTEXITCODE -ne 0) { throw 'Source action tests failed' }
 }
 Write-Output 'Built Shixun.exe'
