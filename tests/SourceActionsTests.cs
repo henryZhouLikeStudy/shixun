@@ -20,6 +20,8 @@ class SourceActionsTests {
   store.State.articles.Add(new Article{id="notice",read=false,remindAt=Data.Now()+900000});store.Save();
   typeof(ReaderApp).GetMethod("MarkNoticeRead",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(app,new object[]{"notice"});
   var readBack=new Store(folder).State.articles[0];Check(readBack.read&&readBack.remindAt==0);
+  var queue=new NotificationQueue();var first=new Article{id="first"};var second=new Article{id="second"};var third=new Article{id="third"};
+  queue.Add(new[]{first,second,third,first});Check(queue.Count==3);Check(queue.Take()=="first");Check(queue.Take()=="second");queue.Add(new[]{first});Check(queue.Count==1);queue.Complete("first");Check(queue.Take()=="third");queue.Add(new[]{first});Check(queue.Take()=="first");
   Console.WriteLine("PASS native source actions: persisted pause/resume, repeated intent, immediate schedule, invalid inputs");return 0;
  }catch(Exception e){Console.Error.WriteLine(e);return 1;}finally{if(Directory.Exists(folder))Directory.Delete(folder,true);}}
 }
