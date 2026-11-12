@@ -10,7 +10,7 @@ Copy-Item -LiteralPath (Join-Path $WebViewSdk 'runtimes/win-x64/native/WebView2L
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
 $refs = @('/reference:System.Windows.Forms.dll','/reference:System.Drawing.dll','/reference:System.Web.Extensions.dll','/reference:System.Xml.Linq.dll','/reference:System.Security.dll','/reference:Microsoft.CSharp.dll',"/reference:$outDir/Microsoft.Web.WebView2.Core.dll","/reference:$outDir/Microsoft.Web.WebView2.WinForms.dll")
 $sources = @(Get-ChildItem -LiteralPath (Join-Path $root 'src') -Filter '*.cs' | ForEach-Object FullName)
-& $compiler /nologo /codepage:65001 /target:winexe /platform:x64 @refs "/out:$outDir/Shixun.exe" @sources
+& $compiler /nologo /codepage:65001 /target:winexe /platform:x64 "/win32icon:$root/assets/Shixun.ico" @refs "/out:$outDir/Shixun.exe" @sources
 if ($LASTEXITCODE -ne 0) { throw 'Compilation failed' }
 Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'Shixun.exe.config') -Force
 Copy-Item -LiteralPath (Join-Path $root 'ui') -Destination $outDir -Recurse -Force
@@ -38,5 +38,10 @@ if ($Test) {
  Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'SourceActionsTests.exe.config') -Force
  & (Join-Path $outDir 'SourceActionsTests.exe')
  if ($LASTEXITCODE -ne 0) { throw 'Source action tests failed' }
+ & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Windows.Forms.dll /reference:System.Drawing.dll "/reference:$outDir/Shixun.exe" "/out:$outDir/PopupTests.exe" (Join-Path $root 'tests/PopupTests.cs')
+ if ($LASTEXITCODE -ne 0) { throw 'Popup test compilation failed' }
+ Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'PopupTests.exe.config') -Force
+ & (Join-Path $outDir 'PopupTests.exe')
+ if ($LASTEXITCODE -ne 0) { throw 'Popup test failed' }
 }
 Write-Output 'Built Shixun.exe'
