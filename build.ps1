@@ -29,7 +29,7 @@ if ($Test) {
  Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'AiNoticeTests.exe.config') -Force
  & (Join-Path $outDir 'AiNoticeTests.exe')
  if ($LASTEXITCODE -ne 0) { throw 'AI notice tests failed' }
- $core = @('Models.cs','Store.cs','Transport.cs','Feeds.cs','Rules.cs','Engine.cs','ImageCache.cs','AiService.cs','AiDigest.cs','BatchEdit.cs') | ForEach-Object { Join-Path $root "src/$_" }
+ $core = @('Models.cs','ClipboardContent.cs','Store.cs','Transport.cs','Feeds.cs','Rules.cs','Engine.cs','ImageCache.cs','AiService.cs','AiEnrichment.cs','AiDigest.cs','BatchEdit.cs') | ForEach-Object { Join-Path $root "src/$_" }
  & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Web.Extensions.dll /reference:System.Security.dll /reference:System.Xml.Linq.dll "/out:$outDir/CoreTests.exe" @core (Join-Path $root 'tests/CoreTests.cs')
  if ($LASTEXITCODE -ne 0) { throw 'Test compilation failed' }
  Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'CoreTests.exe.config') -Force
