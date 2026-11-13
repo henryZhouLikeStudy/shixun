@@ -66,7 +66,9 @@ public sealed class AiRun {
  public long inputTokens,outputTokens,totalTokens,cachedTokens,reasoningTokens;
 }
 public sealed class Notice {public string id="",article="";public double time=0;}
+public sealed class DailyDigest {public string day="",text="",model="";public double at;public int included,excluded;}
 public sealed class ClientState {
+ public DailyDigest digest;
  public int version=1;
  public Preferences settings=new Preferences();
  public List<Source> sources=new List<Source>();

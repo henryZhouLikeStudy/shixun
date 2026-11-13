@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 namespace Shixun {
-public sealed class AiService {
+public sealed partial class AiService {
  readonly Store store;
  readonly SemaphoreSlim gate=new SemaphoreSlim(1,1);
  public const string CredentialKey="@ai";
