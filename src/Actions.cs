@@ -13,7 +13,7 @@ namespace Shixun {
 public sealed partial class ReaderApp {
  async Task<object> Dispatch(string action,Dictionary<string,object> data){string id=S(data,"id");
  if(action=="copyRich"||action=="imageAction"||action=="copyImageData")return await ContentAction(action,data);
- if(new[]{"saveAi","saveAiNotice","aiCredentials","analyze","testAi","clearAi","dailyDigest"}.Contains(action))return await AiAction(action,data);
+ if(new[]{"saveAi","saveAiNotice","aiCredentials","analyze","testAi","clearAi","dailyDigest","modelPrices"}.Contains(action))return await AiAction(action,data);
  if(action=="saveToken"){string key=id=="ai"?AiService.CredentialKey:id;lock(store.Gate){if(key!=AiService.CredentialKey&&!store.State.sources.Any(s=>s.id==key)&&!store.State.ruleSources.Any(s=>s.id==key))throw new SafeError("来源不存在。");string token=S(data,"token");if(token.Length==0||token.Length>32000)throw new SafeError("密钥长度无效。");RequestProfile old;var profile=store.State.credentials.TryGetValue(key,out old)?Data.Clone(old):new RequestProfile();profile.mode="bearer";profile.token=token;profile.fields.RemoveAll(f=>f.place=="header"&&f.name.Equals("Authorization",StringComparison.OrdinalIgnoreCase));Transport.ValidateProfile(profile);store.State.credentials[key]=profile;store.Save();}return true;}
  if(action=="ready"){ready=true;Push();if(arguments.Contains("--background")&&store.State.settings.hiddenStart)window.Hide();if(arguments.Contains("--verify-ui"))Capture();if(store.State.settings.checkUpdates)BeginUpdateCheck();return true;}
  if(action=="sync"){await engine.Run(true,id);return true;}

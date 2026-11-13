@@ -5,7 +5,7 @@ function refreshAiMonitor(){
  const rows=history.filter(x=>new Date(x.at).toDateString()===new Date().toDateString()),known=rows.filter(x=>x.usageKnown);
  root.replaceChildren();renderAiMetrics(root,history);root.append(heading('处理记录'));
  if(state.ai?.enabled&&!state.ai.allowPrivate&&state.sources.some(s=>s.privateSource||s.configured))root.append(note('私有订阅正文尚未授权：这些来源不会自动处理。请按需开启“允许发送私有订阅正文”，再处理所需文章。'));
- root.append(note('今日记录 '+rows.length+' 条 · 成功 '+rows.filter(x=>x.status==='success').length+' · 失败/拦截 '+rows.filter(x=>['failed','blocked'].includes(x.status)).length+' · 已知 Token '+known.reduce((n,x)=>n+x.totalTokens,0)),note('累计服务商返回用量：输入 '+(usage.input||0)+' / 输出 '+(usage.output||0)+' / 总计 '+(usage.total||0)+' Token。未返回 usage 的请求显示“未知”；缓存与推理 Token 为子项，不重复累加。不估算金额。'));
+ root.append(note('今日记录 '+rows.length+' 条 · 成功 '+rows.filter(x=>x.status==='success').length+' · 失败/拦截 '+rows.filter(x=>['failed','blocked'].includes(x.status)).length+' · 已知 Token '+known.reduce((n,x)=>n+x.totalTokens,0)),note('累计服务商返回用量：输入 '+(usage.input||0)+' / 输出 '+(usage.output||0)+' / 总计 '+(usage.total||0)+' Token。未返回 usage 的请求显示“未知”；缓存与推理 Token 为子项，不重复累加。费用仅在返回用量且价格可匹配时估算，与账单可能不同。'));
  const filter=el('select');filter.setAttribute('aria-label','AI记录筛选');for(const [value,text]of [['','全部记录'],['failed','失败'],['blocked','已拦截'],['success','成功'],['cached','缓存命中']]){const o=el('option','',text);o.value=value;filter.append(o)}
  filter.value=window.aiHistoryFilter||'';filter.onchange=()=>{window.aiHistoryFilter=filter.value;refreshAiMonitor()};root.append(filter);
  const list=el('div','ai-history');for(const run of history.filter(x=>!filter.value||x.status===filter.value).slice(0,100)){
