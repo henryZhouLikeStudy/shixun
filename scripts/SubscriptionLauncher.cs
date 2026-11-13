@@ -26,7 +26,7 @@ class SubscriptionLauncher {
       var source=entry.source;source.id=Data.Id();source.privateSource=true;source.enabled=true;source.initialized=false;source.nextRun=0;source.etag="";source.modified="";source.lastSync=0;source.error="";
       store.State.sources.Add(source);if(entry.profile!=null)store.State.credentials[source.id]=entry.profile;
      }
-     foreach(var c in seed.categories)if(!store.State.categories.Any(x=>x.name==c.name)){c.id=Data.Id();store.State.categories.Add(c);}
+     // Subscription bundles import sources only; categories are always user-created.
      store.Save();File.WriteAllText(marker,"Imported subscription bundle. Existing user preferences are preserved.");
     }
     if(verify){var state=new Store(folder).State;Console.WriteLine(Data.Json().Serialize(new{sources=state.sources.Count,credentials=state.credentials.Count,articles=state.articles.Count,aiEnabled=state.ai.enabled}));}

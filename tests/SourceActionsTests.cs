@@ -22,6 +22,18 @@ class SourceActionsTests {
   var readBack=new Store(folder).State.articles[0];Check(readBack.read&&readBack.remindAt==0);
   var queue=new NotificationQueue();var first=new Article{id="first"};var second=new Article{id="second"};var third=new Article{id="third"};
   queue.Add(new[]{first,second,third,first});Check(queue.Count==3);Check(queue.Take()=="first");Check(queue.Take()=="second");queue.Add(new[]{first});Check(queue.Count==1);queue.Complete("first");Check(queue.Take()=="third");queue.Add(new[]{first});Check(queue.Take()=="first");
+  var aiAction=typeof(ReaderApp).GetMethod("AiAction",BindingFlags.Instance|BindingFlags.NonPublic);
+  store.State.ai=new AiSettings{endpoint="https://example.com/v1/chat/completions",model="fixture-model"};
+  var value=Data.Clone(store.State.ai);value.preset="fixture-preset";
+  var save=new Dictionary<string,object>{{"settings",value},{"apiKey","fixture-key"}};
+  ((Task<object>)aiAction.Invoke(app,new object[]{"saveAi",save})).GetAwaiter().GetResult();
+  var persisted=new Store(folder).State;Check(persisted.ai.preset=="fixture-preset"&&persisted.credentials[AiService.CredentialKey].token=="fixture-key");
+  store.State.credentials[AiService.CredentialKey].fields.Add(new RequestField{place="header",name="X-Fixture",value="custom"});save["apiKey"]="fixture-new-key";
+  ((Task<object>)aiAction.Invoke(app,new object[]{"saveAi",save})).GetAwaiter().GetResult();Check(store.State.credentials[AiService.CredentialKey].fields.Count==1);
+  save["apiKey"]="";value.model="changed-model";((Task<object>)aiAction.Invoke(app,new object[]{"saveAi",save})).GetAwaiter().GetResult();Check(store.State.credentials[AiService.CredentialKey].token=="fixture-new-key");
+  save["apiKey"]="invalid\nkey";rejected=false;try{((Task<object>)aiAction.Invoke(app,new object[]{"saveAi",save})).GetAwaiter().GetResult();}catch(SafeError){rejected=true;}Check(rejected&&store.State.credentials[AiService.CredentialKey].token=="fixture-new-key");
+  save["apiKey"]="";value.endpoint="https://other.example.com/chat/completions";((Task<object>)aiAction.Invoke(app,new object[]{"saveAi",save})).GetAwaiter().GetResult();Check(!store.State.credentials.ContainsKey(AiService.CredentialKey));
+  Console.WriteLine("PASS atomic AI settings/key save, advanced fields, blank-key preservation, invalid-key rejection and endpoint isolation");
   Console.WriteLine("PASS native source actions: persisted pause/resume, repeated intent, immediate schedule, invalid inputs");return 0;
  }catch(Exception e){Console.Error.WriteLine(e);return 1;}finally{if(Directory.Exists(folder))Directory.Delete(folder,true);}}
 }

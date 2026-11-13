@@ -13,6 +13,7 @@ public static class Data {
 }
 public sealed class Preferences {
  public int interval=5,retention=1,duration=8,cacheMB=200;
+ public bool pushEnabled=true;
  public bool autostart=false,hiddenStart=true,confirmDelete=true,images=true,sound=false,quiet=true,keepStars=false;
  public string theme="system",font="normal",density="comfortable",notification="custom",position="right",notifyScope="all",notifyJoin="any",notifyKeywords="",quietStart="22:00",quietEnd="08:00";
  public List<string> notifyCategories=new List<string>();
@@ -46,6 +47,7 @@ public sealed class Article {
  public string aiError="";
 }
 public sealed class AiSettings {
+ public string preset="";
  public bool enabled=false,autoNew=true,allowPrivate=false,useTitle=true,useCategory=true,useRating=true;
  public string endpoint="",model="",mode="normal",tokenField="max_tokens",reasoningEffort="",thinking="model",criteria="根据内容相关性、信息完整度和实用性评价；购物信息优先主商品，忽略赠品与凑单，不虚构价格比较或优惠真实性。";
  public int maxTokens=2048,timeoutSeconds=90,dailyLimit=30,maxInputChars=6000;
@@ -56,6 +58,12 @@ public sealed class AiResult {
  public double at;
 }
 public sealed class Mark {public string id="";public double time=0;}
+public sealed class AiRun {
+ public string id=Data.Id(),article="",title="",model="",kind="manual",status="running",error="";
+ public double at=Data.Now(),elapsedMs;
+ public bool usageKnown;
+ public long inputTokens,outputTokens,totalTokens,cachedTokens,reasoningTokens;
+}
 public sealed class Notice {public string id="",article="";public double time=0;}
 public sealed class ClientState {
  public int version=1;
@@ -70,6 +78,8 @@ public sealed class ClientState {
  public AiSettings ai=new AiSettings();
  public string aiDay="";
  public int aiRequestsToday=0;
+ public List<AiRun> aiHistory=new List<AiRun>();
+ public long aiInputTokens,aiOutputTokens,aiTotalTokens;
 }
 public sealed class RuleDocument {public int version;public List<RuleCategory> categories=new List<RuleCategory>();}
 public sealed class RuleCategory {public string key="",name="",color="#729178";public List<string> keywords=new List<string>(),exclude=new List<string>();}
