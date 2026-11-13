@@ -1,5 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-only
 'use strict';
+// Notification navigation must apply the same read action as opening a list item.
+window.chrome?.webview?.addEventListener('message',async e=>{
+ if(e.data.type!=='select')return;
+ const article=state.articles.find(a=>a.id===e.data.id);if(!article)return;
+ if(active==='daily'||!filtered().some(a=>a.id===article.id)){active='all';$('#search').value='';unreadSession=null}
+ if(active==='unread')unreadSession?.add(article.id);
+ document.querySelectorAll('dialog[open]').forEach(d=>d.close());
+ selected=article.id;render();showDetail();$('#detail').classList.add('mobile-open');
+ if(!article.read)try{await rpc('article',{id:article.id,operation:'read'})}catch(error){feedback(error.message)}
+});
 let compactMenu=null,draggedNavItem=null,navItemOrders={};try{navItemOrders=JSON.parse(localStorage.getItem('navItemOrders')||'{}')||{}}catch{}
 function showCompactMenu(event,items,title='快捷操作'){event.preventDefault();if(compactMenu)compactMenu.remove();const menu=el('div','compact-menu');menu.id='contextMenu';menu.setAttribute('popover','auto');menu.setAttribute('aria-label',title);menu.setAttribute('role','menu');for(const [label,action]of items){const item=btn(label,'context-action',async()=>{menu.hidePopover();await action()});item.setAttribute('role','menuitem');menu.append(item)}document.body.append(menu);compactMenu=menu;menu.showPopover();const bounds=menu.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(event.clientX,innerWidth-bounds.width-8))+'px';menu.style.top=Math.max(8,Math.min(event.clientY,innerHeight-bounds.height-8))+'px';menu.querySelector('button')?.focus();menu.onkeydown=e=>{const nodes=[...menu.querySelectorAll('button')],index=nodes.indexOf(document.activeElement);if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();nodes[e.key==='Home'?0:e.key==='End'?nodes.length-1:(index+(e.key==='ArrowDown'?1:-1)+nodes.length)%nodes.length]?.focus()}}}
 function articleContextMenu(event){showCompactMenu(event,[['标为已读',()=>runBatch('read')],['标为未读',()=>runBatch('unread')],['加入收藏',()=>runBatch('star')],['取消收藏',()=>runBatch('unstar')],['15分钟后提醒',()=>runBatch('remind')],['删除所选',()=>runBatch('delete')],['更多批量操作…',()=>batchMenu()]],'所选内容快捷操作')}
