@@ -1,4 +1,4 @@
-param([string]$Version = '1.2.1')
+param([string]$Version = '1.2.2')
 $ErrorActionPreference = 'Stop'
 if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw 'Invalid release version' }
 $root = Split-Path $PSScriptRoot -Parent
@@ -14,7 +14,7 @@ $source = Join-Path $folder $sourceName
 if ($LASTEXITCODE -ne 0) { throw 'Source archive failed' }
 $stage = Join-Path $folder "portable-$Version"
 $null = New-Item -ItemType Directory -Path $stage -Force
-$files = @('Shixun.exe','Shixun.exe.config','Microsoft.Web.WebView2.Core.dll','Microsoft.Web.WebView2.WinForms.dll','WebView2Loader.dll','LICENSE','LICENSE-WebView2.txt','NOTICE-WebView2.txt','README.md','THIRD-PARTY-NOTICES.md','CHANGELOG.md','ui')
+$files = @('Shixun.exe','UpdateInstaller.exe','Shixun.exe.config','Microsoft.Web.WebView2.Core.dll','Microsoft.Web.WebView2.WinForms.dll','WebView2Loader.dll','LICENSE','LICENSE-WebView2.txt','NOTICE-WebView2.txt','README.md','THIRD-PARTY-NOTICES.md','CHANGELOG.md','ui')
 foreach ($file in $files) { Copy-Item -LiteralPath (Join-Path $root "build/$file") -Destination $stage -Recurse -Force }
 Copy-Item -LiteralPath $source -Destination $stage -Force
 $zip = Join-Path $folder "Shixun-$Version-win-x64.zip"

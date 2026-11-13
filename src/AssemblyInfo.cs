@@ -3,5 +3,5 @@ using System.Reflection;
 [assembly: AssemblyTitle("拾讯 Shixun")]
 [assembly: AssemblyProduct("拾讯 Shixun")]
 [assembly: AssemblyDescription("Windows RSS / Atom reader")]
-[assembly: AssemblyVersion("1.2.1.0")]
-[assembly: AssemblyFileVersion("1.2.1.0")]
+[assembly: AssemblyVersion("1.2.2.0")]
+[assembly: AssemblyFileVersion("1.2.2.0")]

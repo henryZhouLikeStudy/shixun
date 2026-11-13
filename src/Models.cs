@@ -13,7 +13,7 @@ public static class Data {
 }
 public sealed class Preferences {
  public int interval=5,retention=1,duration=8,cacheMB=200;
- public bool pushEnabled=true;
+ public bool pushEnabled=true,checkUpdates=true;
  public bool autostart=false,hiddenStart=true,confirmDelete=true,images=true,sound=false,quiet=true,keepStars=false;
  public string theme="system",font="normal",density="comfortable",notification="custom",position="right",notifyScope="all",notifyJoin="any",notifyKeywords="",quietStart="22:00",quietEnd="08:00";
  public List<string> notifyCategories=new List<string>();
@@ -48,12 +48,13 @@ public sealed class Article {
 }
 public sealed class AiSettings {
  public string preset="";
+ public bool notifyAfter=false;
  public bool enabled=false,autoNew=true,allowPrivate=false,useTitle=true,useCategory=true,useRating=true;
  public string endpoint="",model="",mode="normal",tokenField="max_tokens",reasoningEffort="",thinking="model",criteria="根据内容相关性、信息完整度和实用性评价；购物信息优先主商品，忽略赠品与凑单，不虚构价格比较或优惠真实性。";
  public int maxTokens=2048,timeoutSeconds=90,dailyLimit=30,maxInputChars=6000;
 }
 public sealed class AiResult {
- public string title="",categoryId="",reason="",model="",fingerprint="";
+ public string title="",price="",categoryId="",reason="",model="",fingerprint="";
  public int rating;
  public double at;
 }

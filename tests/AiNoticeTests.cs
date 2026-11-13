@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: GPL-3.0-only
+using System;
+using System.IO;
+using System.Text;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Net;
+using System.Net.Sockets;
+using System.Windows.Forms;
+using Shixun;
+class AiNoticeTests {
+ static void Set(object o,string key,object value){typeof(ReaderApp).GetField(key,BindingFlags.Instance|BindingFlags.NonPublic).SetValue(o,value);}
+ [STAThread]static int Main(){string folder=Path.Combine(Path.GetTempPath(),"ShixunAiNotice-"+Guid.NewGuid().ToString("N"));var listener=new TcpListener(IPAddress.Loopback,0);try{
+  listener.Start();string url="http://127.0.0.1:"+((IPEndPoint)listener.LocalEndpoint).Port+"/chat/completions";var release=new ManualResetEventSlim(false);bool received=false;
+  var server=Task.Run(()=>{using(var client=listener.AcceptTcpClient())using(var stream=client.GetStream()){var bytes=new List<byte>();int ch;while((ch=stream.ReadByte())>=0){bytes.Add((byte)ch);int n=bytes.Count;if(n>=4&&bytes[n-4]==13&&bytes[n-3]==10&&bytes[n-2]==13&&bytes[n-1]==10)break;}string head=Encoding.UTF8.GetString(bytes.ToArray());int length=0;foreach(string line in head.Split('\n'))if(line.StartsWith("Content-Length:",StringComparison.OrdinalIgnoreCase))int.TryParse(line.Substring(15).Trim(),out length);for(int i=0;i<length;i++)stream.ReadByte();received=true;release.Wait(5000);byte[] content=Encoding.UTF8.GetBytes("{\"choices\":[{\"message\":{\"content\":\"{\\\"title\\\":\\\"运动鞋\\\",\\\"price\\\":\\\"到手¥129\\\",\\\"rating\\\":4,\\\"reason\\\":\\\"虚构评估\\\"}\"}}]}");byte[] headers=Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: "+content.Length+"\r\nConnection: close\r\n\r\n");stream.Write(headers,0,headers.Length);stream.Write(content,0,content.Length);}});
+  var store=new Store(folder);store.State.ai=new AiSettings{enabled=true,notifyAfter=true,endpoint=url,model="fixture"};store.State.sources.Add(new Source{id="source",url="https://example.com/feed"});var article=new Article{id="a",source="source",title="运动鞋129元"};store.State.articles.Add(article);
+  using(var form=new Form()){var handle=form.Handle;var app=(ReaderApp)FormatterServices.GetUninitializedObject(typeof(ReaderApp));var queue=new NotificationQueue();Set(app,"store",store);Set(app,"window",form);Set(app,"aiService",new AiService(store));Set(app,"pendingAiNotices",new HashSet<string>());Set(app,"notificationQueue",queue);Set(app,"locked",true);
+   var method=typeof(ReaderApp).GetMethod("WaitForAiNotices",BindingFlags.Instance|BindingFlags.NonPublic);bool waiting=(bool)method.Invoke(app,new object[]{new List<Article>{article}});if(!waiting||queue.Count!=0)throw new Exception("notification was queued before AI");
+   var watch=System.Diagnostics.Stopwatch.StartNew();while(!received&&watch.Elapsed.TotalSeconds<4){Application.DoEvents();Thread.Sleep(10);}if(!received||queue.Count!=0)throw new Exception("notification did not wait for AI response");release.Set();while(queue.Count==0&&watch.Elapsed.TotalSeconds<6){Application.DoEvents();Thread.Sleep(10);}if(queue.Count!=1||store.State.articles[0].ai==null||store.State.articles[0].ai.price!="到手¥129")throw new Exception("AI result missing when notification became ready");
+   store.State.ai.notifyAfter=false;if((bool)method.Invoke(app,new object[]{new List<Article>{article}}))throw new Exception("fast notification mode blocked");server.Wait(2000);listener.Stop();queue.Take();queue.Complete("a");store.State.ai.notifyAfter=true;var fallback=new Article{id="b",source="source",title="保留原标题"};store.State.articles.Add(fallback);method.Invoke(app,new object[]{new List<Article>{fallback}});watch.Restart();while(queue.Count==0&&watch.Elapsed.TotalSeconds<6){Application.DoEvents();Thread.Sleep(10);}if(queue.Count!=1||store.State.articles.Last().aiError.Length==0)throw new Exception("AI failure did not fall back to original notification");
+  }
+  Console.WriteLine("PASS AI notifications wait for response, persist product/price/rating before enqueue and support immediate mode");return 0;
+ }catch(Exception ex){Console.Error.WriteLine(ex);return 1;}finally{listener.Stop();if(Directory.Exists(folder))Directory.Delete(folder,true);}}
+}
