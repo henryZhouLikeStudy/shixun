@@ -10,6 +10,9 @@ public static class Rules {
  public static string[] Words(string text){return (text??"").Split(new[]{',','，','\n'},StringSplitOptions.RemoveEmptyEntries).Select(x=>x.Trim()).Where(x=>x.Length>0).ToArray();}
  public static bool Contains(string text,string word){return text.IndexOf(word,StringComparison.OrdinalIgnoreCase)>=0;}
  public static string Classify(ClientState state,Article article){if(article.locked)return article.category;string text=article.title+" "+article.summary;foreach(var c in state.categories){if(Words(c.exclude).Any(w=>Contains(text,w)))continue;bool match=Words(c.keywords).Any(w=>Contains(text,w));if(!match&&c.pattern.Length>0)try{match=Regex.IsMatch(text,c.pattern,RegexOptions.IgnoreCase,TimeSpan.FromMilliseconds(100));}catch{}if(match)return c.id;}return "";}
+ public static bool NeedsAiNotice(ClientState state){return state.ai!=null&&state.ai.enabled&&state.ai.notifyAfter;}
+ public static bool NoticeCandidate(ClientState state,Article a){return NeedsAiNotice(state)||Notify(state.settings,a);}
+ public static bool Notify(ClientState state,Article article){var content=Data.Clone(article);if(NeedsAiNotice(state)&&content.ai!=null)content.title=AiService.DisplayTitle(content.ai,state.ai.useRating);return Notify(state.settings,content);}
  public static bool Notify(Preferences p,Article a){if(p.notifyScope!="filtered")return true;var words=Words(p.notifyKeywords);bool word=words.Any(w=>Contains(a.title+" "+a.summary,w)),cat=p.notifyCategories.Contains(a.category);if(words.Length==0&&p.notifyCategories.Count==0)return false;return p.notifyJoin=="all"?(words.Length==0||word)&&(p.notifyCategories.Count==0||cat):word||cat;}
  public static bool Quiet(Preferences p,DateTime local){if(!p.quiet)return false;TimeSpan start,end;if(!TimeSpan.TryParse(p.quietStart,out start)||!TimeSpan.TryParse(p.quietEnd,out end))return true;var now=local.TimeOfDay;return start<=end?now>=start&&now<end:now>=start||now<end;}
 }

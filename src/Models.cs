@@ -51,7 +51,7 @@ public sealed class AiSettings {
  public bool notifyAfter=false;
  public bool enabled=false,autoNew=true,allowPrivate=false,useTitle=true,useCategory=true,useRating=true;
  public string endpoint="",model="",mode="normal",tokenField="max_tokens",reasoningEffort="",thinking="model",criteria="根据内容相关性、信息完整度和实用性评价；购物信息优先主商品，忽略赠品与凑单，不虚构价格比较或优惠真实性。";
- public int maxTokens=2048,timeoutSeconds=90,dailyLimit=30,maxInputChars=6000;
+ public int maxTokens=2048,timeoutSeconds=90,dailyLimit=0,maxInputChars=6000;
 }
 public sealed class AiResult {
  public string title="",price="",categoryId="",reason="",model="",fingerprint="";
