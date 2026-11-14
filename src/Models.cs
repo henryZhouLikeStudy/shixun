@@ -47,6 +47,8 @@ public sealed class Article {
  public string aiError="";
 }
 public sealed class AiSettings {
+ public bool useContext=false;
+ public int contextChars=1600;
  public bool useImages=false,allowNewCategories=true,useHistory=false,estimateCost=false;
  public string systemPrompt="",currency="USD";
  public double inputCost=0,outputCost=0,cacheReadCost=0,priceUpdated=0;
@@ -67,6 +69,7 @@ public sealed class AiResult {
 }
 public sealed class Mark {public string id="";public double time=0;}
 public sealed class AiRun {
+ public int contextCount,contextChars;
  public bool cacheUsageKnown=false;
  public bool costKnown=false;
  public double estimatedCost=0;

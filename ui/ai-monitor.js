@@ -10,6 +10,7 @@ function refreshAiMonitor(){
  filter.value=window.aiHistoryFilter||'';filter.onchange=()=>{window.aiHistoryFilter=filter.value;refreshAiMonitor()};root.append(filter);
  const list=el('div','ai-history');for(const run of history.filter(x=>!filter.value||x.status===filter.value).slice(0,100)){
   const row=el('div','ai-history-row');row.append(el('strong','',(labels[run.status]||run.status)+' · '+(run.title||'AI请求')),el('small','',date(run.at)+' · '+(run.kind==='digest'?'今日总结':run.kind==='test'?'连接测试':run.kind==='notification'?'通知处理':run.kind==='auto'?'自动处理':'手动处理')+' · '+run.model+' · '+((run.elapsedMs||0)/1000).toFixed(1)+'秒'),el('div','',run.usageKnown?'输入 '+run.inputTokens+' / 输出 '+run.outputTokens+' / 总计 '+run.totalTokens+' · 缓存 '+run.cachedTokens+' · 推理 '+run.reasoningTokens:'Token：'+(['cached','blocked','queued'].includes(run.status)?'未调用接口':'未知')));
+  if(run.contextCount)row.append(el('small','','参考相关旧文 '+run.contextCount+' 篇 · 历史输入 '+run.contextChars+' 字符（含结构与说明）'));
   if(run.error)row.append(el('p','ai-error',run.error));if(run.article&&state.articles.some(a=>a.id===run.article))row.append(btn('查看文章','subtle',()=>{selected=run.article;document.querySelector('#settings').close();render();showDetail();document.querySelector('#detail').classList.add('mobile-open')}));list.append(row)
  }if(!list.children.length)list.append(note('暂无处理记录。连接测试只处理虚构示例，历史文章需手动处理。'));root.append(list);scroller.scrollTop=scroll
 }
