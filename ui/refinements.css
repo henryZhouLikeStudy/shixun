@@ -1,0 +1,26 @@
+body[data-backdrop=paper]:not(.dark) .detail{background:#fffaf0}
+body[data-backdrop=sage]:not(.dark) .detail{background:#f0f7f0}
+body[data-backdrop=slate]:not(.dark) .detail{background:#eff3f8}
+.filter-categories{max-height:220px;overflow:auto;display:flex;flex-wrap:wrap;gap:12px;padding:16px}
+.filter-categories label{display:flex;align-items:center;gap:6px}
+.source-original{border-bottom:1px solid #ccd4cc;margin:0 0 18px;padding:0 0 12px;font-size:.92em;line-height:1.65;overflow-wrap:anywhere}
+.source-original small{color:#758477}.source-original p{margin:4px 0}
+.notification-filters{margin:14px 0;padding:2px 12px;border:1px solid var(--line);border-radius:10px}
+.notification-filters .filter-categories{margin:12px 0;max-height:none;overflow:visible;align-items:center}
+.notification-filters .note{margin:10px 0}
+.nav-groups .nav-section{display:contents}
+.nav-groups .nav-scroll-marker{display:block;height:0}
+.nav-groups .nav-label{position:sticky;margin-top:0;margin-bottom:0;min-height:34px;background:var(--side);box-sizing:border-box}
+.nav-groups .nav-label.is-pinned{box-shadow:0 1px 0 var(--line)}
+.nav-sort{font-size:11px;max-width:71px;min-width:0;padding:3px 0;border:0;background:var(--side);color:var(--muted)}
+.nav-show-more{display:block;width:100%;text-align:left;padding:7px 14px;color:var(--accent)}
+.filter-selection-summary{flex:1;min-width:0;overflow-wrap:anywhere;font-size:13px;color:var(--muted)}
+.filter-picker{width:min(540px,90vw);height:min(600px,84vh);padding:20px}
+.filter-picker[open]{display:flex;flex-direction:column;gap:12px}
+.filter-picker header,.filter-picker footer,.filter-picker-tools{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.filter-picker header h3,.filter-picker footer span{flex:1}
+.filter-picker-options{overflow-y:auto;min-height:0;flex:1;overscroll-behavior:contain;scrollbar-gutter:stable}
+.filter-picker-option{display:flex;align-items:center;gap:12px;min-height:44px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:15px}
+.filter-picker-option:hover,.filter-picker-option:has(input:checked){background:var(--hover)}
+.filter-picker-option input,.notification-filters input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0}
+.filter-picker footer{border-top:1px solid var(--line);padding-top:12px;font-size:13px}

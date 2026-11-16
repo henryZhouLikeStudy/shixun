@@ -20,6 +20,11 @@ foreach ($file in @('LICENSE','README.md','THIRD-PARTY-NOTICES.md','CHANGELOG.md
 Copy-Item -LiteralPath (Join-Path $WebViewSdk 'LICENSE.txt') -Destination (Join-Path $outDir 'LICENSE-WebView2.txt') -Force
 Copy-Item -LiteralPath (Join-Path $WebViewSdk 'NOTICE.txt') -Destination (Join-Path $outDir 'NOTICE-WebView2.txt') -Force
 if ($Test) {
+ & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Web.Extensions.dll "/reference:$outDir/Shixun.exe" "/out:$outDir/AiRequestLimiterTests.exe" (Join-Path $root 'tests/AiRequestLimiterTests.cs')
+ if ($LASTEXITCODE -ne 0) { throw 'AI limiter tests compilation failed' }
+ Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'AiRequestLimiterTests.exe.config') -Force
+ & (Join-Path $outDir 'AiRequestLimiterTests.exe')
+ if ($LASTEXITCODE -ne 0) { throw 'AI limiter tests failed' }
  & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Windows.Forms.dll /main:UpdateInstallTests "/out:$outDir/UpdateInstallTests.exe" (Join-Path $root 'scripts/UpdateInstaller.cs') (Join-Path $root 'tests/UpdateInstallTests.cs')
  if ($LASTEXITCODE -ne 0) { throw 'Update install tests compilation failed' }
  & (Join-Path $outDir 'UpdateInstallTests.exe')
@@ -29,7 +34,7 @@ if ($Test) {
  Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'AiNoticeTests.exe.config') -Force
  & (Join-Path $outDir 'AiNoticeTests.exe')
  if ($LASTEXITCODE -ne 0) { throw 'AI notice tests failed' }
- $core = @('Models.cs','ClipboardContent.cs','Store.cs','Transport.cs','Feeds.cs','Rules.cs','Engine.cs','ImageCache.cs','AiService.cs','AiEnrichment.cs','ModelPricing.cs','AiDigest.cs','BatchEdit.cs') | ForEach-Object { Join-Path $root "src/$_" }
+ $core = @('Models.cs','ClipboardContent.cs','Store.cs','Transport.cs','Feeds.cs','Rules.cs','Engine.cs','ImageCache.cs','AiService.cs','AiRequests.cs','AiEnrichment.cs','ModelPricing.cs','AiDigest.cs','BatchEdit.cs') | ForEach-Object { Join-Path $root "src/$_" }
  & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Web.Extensions.dll /reference:System.Security.dll /reference:System.Xml.Linq.dll "/out:$outDir/CoreTests.exe" @core (Join-Path $root 'tests/CoreTests.cs')
  if ($LASTEXITCODE -ne 0) { throw 'Test compilation failed' }
  Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'CoreTests.exe.config') -Force
@@ -61,5 +66,12 @@ if ($Test) {
  Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'UpdateTests.exe.config') -Force
  & (Join-Path $outDir 'UpdateTests.exe')
  if ($LASTEXITCODE -ne 0) { throw 'Update tests failed' }
+}
+if ($Test) {
+ & $compiler /nologo /codepage:65001 /target:exe /platform:x64 /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Web.Extensions.dll "/reference:$outDir/Shixun.exe" "/reference:$outDir/Microsoft.Web.WebView2.Core.dll" "/reference:$outDir/Microsoft.Web.WebView2.WinForms.dll" "/out:$outDir/ImageActionsTests.exe" (Join-Path $root 'tests/ImageActionsTests.cs')
+ if ($LASTEXITCODE -ne 0) { throw 'Image workflow compilation failed' }
+ Copy-Item -LiteralPath (Join-Path $root 'App.config') -Destination (Join-Path $outDir 'ImageActionsTests.exe.config') -Force
+ & (Join-Path $outDir 'ImageActionsTests.exe')
+ if ($LASTEXITCODE -ne 0) { throw 'Image workflow failed' }
 }
 Write-Output 'Built Shixun.exe'

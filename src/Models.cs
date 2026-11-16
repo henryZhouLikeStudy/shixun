@@ -10,6 +10,7 @@ public static class Data {
  public static double Now(){return (DateTimeOffset.UtcNow-new DateTimeOffset(1970,1,1,0,0,0,TimeSpan.Zero)).TotalMilliseconds;}
  public static string Id(){return Guid.NewGuid().ToString("N");}
  public static string Limit(string value,int max){return (value??"").Length>max?value.Substring(0,max):value??"";}
+ public static string CompactTitle(string value,int max=44){var text=System.Text.RegularExpressions.Regex.Replace(value??"",@"\s+"," ").Trim();var parts=System.Globalization.StringInfo.ParseCombiningCharacters(text);if(parts.Length<=max)return text;return text.Substring(0,parts[max-1]).TrimEnd()+"…";}
 }
 public sealed class Preferences {
  public int interval=5,retention=1,duration=8,cacheMB=200;
@@ -17,6 +18,8 @@ public sealed class Preferences {
  public bool autostart=false,hiddenStart=true,confirmDelete=true,images=true,sound=false,quiet=true,keepStars=false;
  public string theme="system",font="normal",density="comfortable",notification="custom",position="right",notifyScope="all",notifyJoin="any",notifyKeywords="",quietStart="22:00",quietEnd="08:00";
  public List<string> notifyCategories=new List<string>();
+ public List<string> notifySources=new List<string>();
+ public List<int> notifyRatings=new List<int>();
 }
 public sealed class RequestField { public string place="header",name="",value=""; }
 public sealed class RequestProfile {
@@ -45,8 +48,13 @@ public sealed class Article {
  public List<string> images=new List<string>();
  public AiResult ai;
  public string aiError="";
+ public ArticleComments comments;
+ public string legacyCommentsHtml="";
 }
+public sealed class ArticleComment {public string id="",author="",text="",time="";public int likes;}
+public sealed class ArticleComments {public string state="pending";public double updatedAt,nextAt;public int round,totalRounds=5;public List<ArticleComment> entries=new List<ArticleComment>();}
 public sealed class AiSettings {
+ public bool digestReasoning=false;
  public bool useContext=false;
  public int contextChars=1600;
  public bool useImages=false,allowNewCategories=true,useHistory=false,estimateCost=false;
@@ -58,7 +66,7 @@ public sealed class AiSettings {
  public bool notifyAfter=false;
  public bool enabled=false,autoNew=true,allowPrivate=false,useTitle=true,useCategory=true,useRating=true;
  public string endpoint="",model="",mode="normal",tokenField="max_tokens",reasoningEffort="",thinking="model",criteria="根据文章的内容相关性、信息完整度、原创性和阅读价值评价；结合用户收藏偏好，不虚构事实或比较。";
- public int maxTokens=2048,timeoutSeconds=90,dailyLimit=0,maxInputChars=6000;
+ public int maxTokens=2048,timeoutSeconds=90,dailyLimit=0,maxInputChars=6000,requestIntervalSeconds=10,maxConcurrentRequests=50;
 }
 public sealed class AiResult {
  public string categoryName="",priceEvidence="",articleType="";
@@ -69,6 +77,7 @@ public sealed class AiResult {
 }
 public sealed class Mark {public string id="";public double time=0;}
 public sealed class AiRun {
+ public double providerCacheRate;
  public int contextCount,contextChars;
  public bool cacheUsageKnown=false;
  public bool costKnown=false;
@@ -100,5 +109,5 @@ public sealed class ClientState {
 }
 public sealed class RuleDocument {public int version;public List<RuleCategory> categories=new List<RuleCategory>();}
 public sealed class RuleCategory {public string key="",name="",color="#729178";public List<string> keywords=new List<string>(),exclude=new List<string>();}
-public sealed class SafeError:Exception {public readonly int delay;public SafeError(string text,int retry=0):base(text){delay=retry;}}
+public sealed class SafeError:Exception {public readonly int delay,statusCode;public SafeError(string text,int retry=0,int status=0):base(text){delay=retry;statusCode=status;}}
 }
