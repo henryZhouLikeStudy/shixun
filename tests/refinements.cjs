@@ -99,6 +99,20 @@ await page.evaluate(()=>{testState.articles[0].comments=null;testState.articles[
 assert.doesNotMatch(await page.locator('#detail>.body').textContent(),/旧评论/);
 await page.getByRole('tab',{name:'评论',exact:true}).click();
 assert.match(await page.locator('.article-comments').textContent(),/旧评论/);
+await page.evaluate(()=>{
+ active='all';selected=null;$('#search').value='';
+ testState.articles=Array.from({length:520},(_,i)=>({id:'load-'+i,source:'s',title:'测试文章 '+i,summary:'测试正文',time:Date.now()-i,read:true,images:[]}));
+ pushTest();
+ window.firstLoadedCard=$('#articles .article');
+});
+assert.equal(await page.locator('#articles .article').count(),60);
+await page.locator('#articles .article').first().click();
+assert.equal(await page.evaluate(()=>window.firstLoadedCard===$('#articles .article')),true);
+await page.evaluate(()=>{$('#articles').scrollTop=$('#articles').scrollHeight});
+await page.waitForFunction(()=>document.querySelectorAll('#articles .article').length===120);
+await page.evaluate(()=>{testState.articles.unshift({id:'new-incoming',source:'s',title:'新消息',summary:'同步进入',time:Date.now()+1000,read:false,images:[]});pushTest()});
+assert.equal(await page.locator('#articles .article').count(),120);
+assert.match(await page.locator('.article-title').textContent(),/测试文章 0/);
 `;
 const file=__dirname+'/ui.cjs',source=fs.readFileSync(file,'utf8').replace('assert.deepEqual(errors,[]);',extra+'assert.deepEqual(errors,[]);');
 const testModule=new Module(file,module);testModule.filename=file;testModule.paths=module.paths;testModule._compile(source,file);

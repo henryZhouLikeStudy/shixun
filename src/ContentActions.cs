@@ -37,5 +37,25 @@ public sealed partial class ReaderApp {
   throw new SafeError("图片操作无效。");
  }
  async Task<byte[]> AiImageBytes(string id,int index){byte[] bytes=await ImageBytes(id,index);return await Task.Run(()=>{using(var stream=new MemoryStream(bytes))using(var image=Image.FromStream(stream)){if((long)image.Width*image.Height>40000000)throw new SafeError("图片尺寸过大。");var encoder=ImageCodecInfo.GetImageEncoders().First(c=>c.MimeType=="image/jpeg");foreach(int edge in new[]{1200,960,768,600,480})foreach(long quality in new long[]{70,50,35}){double ratio=Math.Min(1,edge/(double)Math.Max(image.Width,image.Height));using(var bitmap=new Bitmap(Math.Max(1,(int)(image.Width*ratio)),Math.Max(1,(int)(image.Height*ratio))))using(var graphics=Graphics.FromImage(bitmap))using(var output=new MemoryStream())using(var parameters=new EncoderParameters(1)){graphics.Clear(Color.White);graphics.DrawImage(image,0,0,bitmap.Width,bitmap.Height);parameters.Param[0]=new EncoderParameter(System.Drawing.Imaging.Encoder.Quality,quality);bitmap.Save(output,encoder,parameters);if(output.Length<=85000)return output.ToArray();}}throw new SafeError("图片压缩后仍过大。");}});}
+ async Task<byte[]> ThumbnailBytes(string id,int index){
+  var bytes=await ImageBytes(id,index).ConfigureAwait(false);
+  try{return await ImageCache.Get("thumb:"+id+":"+index,()=>Task.FromResult(ResizePreview(bytes,180))).ConfigureAwait(false);}
+  catch(ArgumentException){return bytes;}
+ }
+ static byte[] ResizePreview(byte[] bytes,int edge){
+  using(var input=new MemoryStream(bytes))
+  using(var image=Image.FromStream(input)){
+   if((long)image.Width*image.Height>40000000)throw new SafeError("图片尺寸过大。");
+   double ratio=Math.Min(1,edge/(double)Math.Max(image.Width,image.Height));
+   using(var bitmap=new Bitmap(Math.Max(1,(int)(image.Width*ratio)),Math.Max(1,(int)(image.Height*ratio))))
+   using(var graphics=Graphics.FromImage(bitmap))
+   using(var output=new MemoryStream()){
+    graphics.Clear(Color.White);
+    graphics.DrawImage(image,0,0,bitmap.Width,bitmap.Height);
+    bitmap.Save(output,ImageFormat.Jpeg);
+    return output.ToArray();
+   }
+  }
+ }
 }
 }
