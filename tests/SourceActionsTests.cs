@@ -19,7 +19,10 @@ class SourceActionsTests {
   rejected=false;try{Call(app,"missing",true);}catch(SafeError){rejected=true;}Check(rejected);
   store.State.articles.Add(new Article{id="notice",read=false,remindAt=Data.Now()+900000});store.Save();
   typeof(ReaderApp).GetMethod("MarkNoticeRead",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(app,new object[]{"notice"});
-  var readBack=new Store(folder).State.articles[0];Check(readBack.read&&readBack.remindAt==0);
+  Check(store.State.articles[0].read&&store.State.articles[0].remindAt==0);
+  Check(System.Threading.SpinWait.SpinUntil(()=>{
+   lock(store.Gate){var readBack=new Store(folder).State.articles[0];return readBack.read&&readBack.remindAt==0;}
+  },TimeSpan.FromSeconds(5)));
   var queue=new NotificationQueue();var first=new Article{id="first"};var second=new Article{id="second"};var third=new Article{id="third"};
   queue.Add(new[]{first,second,third,first});Check(queue.Count==3);Check(queue.Take()=="first");Check(queue.Take()=="second");queue.Add(new[]{first});Check(queue.Count==1);queue.Complete("first");Check(queue.Take()=="third");queue.Add(new[]{first});Check(queue.Take()=="first");
   var aiAction=typeof(ReaderApp).GetMethod("AiAction",BindingFlags.Instance|BindingFlags.NonPublic);
