@@ -69,7 +69,7 @@ public sealed class AiSettings {
  public int maxTokens=2048,timeoutSeconds=90,dailyLimit=0,maxInputChars=6000,requestIntervalSeconds=10,maxConcurrentRequests=50;
 }
 public sealed class AiResult {
- public string categoryName="",priceEvidence="",articleType="";
+ public string categoryName="",priceEvidence="",articleType="",verdict="",unitQuantity="",unitPrice="";
  public bool priceFromImage=false;
  public string title="",price="",categoryId="",reason="",model="",fingerprint="";
  public int rating;

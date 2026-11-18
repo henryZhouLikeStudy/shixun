@@ -12,10 +12,14 @@ jobs:
       - name: Download pinned official WebView2 SDK
         shell: pwsh
         run: ./scripts/get-webview.ps1
-      - name: Compile and run core and native credential tests
+      - name: Compile and run Windows regression tests
         shell: pwsh
         run: ./build.ps1 -Test
+      - name: Package the runtime
+        shell: pwsh
+        run: ./scripts/package.ps1
       - uses: actions/upload-artifact@v4
         with:
           name: shixun-windows-build
-          path: build/
+          path: dist/Shixun-*-win-x64.zip
+          if-no-files-found: error

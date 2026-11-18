@@ -52,7 +52,7 @@ class AiTests {
   settings.systemPrompt="偏好耐用性";state.categories.Add(new Category{id="shoes",name="鞋靴"});state.sources.Add(new Source{id="s",url="https://example.com/feed"});state.articles.Add(new Article{id="f",source="s",title="收藏样本",star=true});
   var second=AiService.Body(article,settings,state.categories);AiService.AddHistory(second,state,settings,article);var after=(object[])second["messages"];
   Check(Data.Json().Serialize(before[0])==Data.Json().Serialize(after[0]),"core prompt stays stable across custom prompt categories and favorite changes");
-  Check(Data.Json().Serialize(after.Last()).Contains("139.13")&&Data.Json().Serialize(after[after.Length-2]).Contains("收藏样本"),"favorites follow stable policy and categories while article remains last for vision");
+  Check(Data.Json().Serialize(after.Last()).Contains("139.13")&&Data.Json().Serialize(after[2]).Contains("收藏样本"),"favorites follow stable policy and precede categories while article remains last for vision");
   var text=Data.Json().Serialize(after[0]);Check(text.Contains("3星是中性基线")&&text.Contains("价格单独写入price")&&text.Contains("不凭常识声称历史低价"),"prompt anchors ratings concise RSS titles and evidence-based prices");
  }
  static void RecentContextTests(){

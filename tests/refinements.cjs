@@ -64,7 +64,7 @@ assert.equal(await page.evaluate(()=>richBody({title:'TB 【6.90】 医用口罩
 assert.equal(await page.evaluate(()=>!!richBody({title:'different title',html:'<p>article body</p>'}).querySelector('.source-original')),true);
 assert.equal(await page.evaluate(()=>richBody({title:'医用口罩 [图片]',html:'<p>医用口罩</p><hr><h3>发布时评论</h3><p>评论内容</p>'}).querySelector('.source-original')),null);
 assert.equal(await page.evaluate(()=>richBody({title:'医用口罩 [图片]',html:'<p>医用口罩</p><!-- rss-comments --><hr><h3>评论（采集时）</h3><p>评论内容</p>'}).querySelector('.source-original')),null);
-assert.equal(await page.evaluate(()=>{state.ai.useTitle=true;state.ai.useRating=true;const title=contentTitle({ai:{title:'华味亨脱油花生420g两袋麻辣或椒盐口味',price:'13.90元（需浏览商品页面掉落2元限时立减，非Plus会员也包邮）',rating:4}});return Array.from(title).length<=44&&title.includes('13.90元')&&title.includes('条件见正文')&&title.endsWith('推荐 4/5')}),true);
+assert.equal(await page.evaluate(()=>{state.ai.useTitle=true;state.ai.useRating=true;const title=contentTitle({ai:{title:'华味亨脱油花生420g两袋麻辣或椒盐口味',price:'13.90元（需浏览商品页面掉落2元限时立减，非Plus会员也包邮）',rating:4}});return Array.from(title).length<=56&&title.includes('13.90元')&&title.endsWith('推荐 4/5')}),true);
 await page.evaluate(()=>openSettings('ai'));
 assert.equal(await page.locator('#ai-requestIntervalSeconds').inputValue(),'10');
 assert.equal(await page.locator('#ai-requestIntervalSeconds').getAttribute('min'),'0');

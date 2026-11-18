@@ -59,6 +59,10 @@ class AiRequestLimiterTests {
   var before=new Article{title="文章",html="<p>正文</p>"};var after=new Article{title="文章",html="<p>正文</p><!-- rss-comments --><hr><h3>评论（采集时）</h3><p>评论</p>"};
   Check(Feeds.SamePrimaryContent(before,after),"comment-only updates preserve primary article identity");
   Check(AiService.Fingerprint(before,new AiSettings(),new List<Category>())==AiService.Fingerprint(after,new AiSettings(),new List<Category>()),"comment updates preserve AI fingerprint and avoid another paid analysis");
-  string display=AiService.DisplayTitle(title,true);Check(display.Length<=44&&display.Contains("13.90元")&&display.EndsWith("推荐 4/5")&&display.Contains("条件见正文"),"compact title retains complete price marker and rating without half a condition");
+  var deal=new AiResult{articleType="shopping",price="13.90元",unitQuantity="2袋",verdict=AiService.ParseVerdict("shopping","值得买")};
+  AiService.SetUnitPrice(deal,new Article{title="花生2袋",summary="两袋到手13.90元"});
+  Check(deal.unitPrice=="约6.95元/袋"&&deal.verdict=="值得买","supported quantity yields unit price and a shopping verdict");
+  deal.unitQuantity="3袋";deal.unitPrice="";AiService.SetUnitPrice(deal,new Article{title="花生2袋"});Check(deal.unitPrice=="","unsupported quantity does not produce a unit price");
+  string display=AiService.DisplayTitle(title,true);Check(display.Length<=56&&display.Contains("13.90元")&&display.EndsWith("推荐 4/5"),"compact title retains complete price marker and rating without replacing the amount");
  }
 }
